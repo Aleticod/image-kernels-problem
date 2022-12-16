@@ -1,9 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <omp.h>
 using namespace std;
 
-// Kernels
+// Kernels (1 - 9)
 double BLUR_KERNEL[3][3] = {{0.0625, 0.125, 0.0625}, {0.125, 0.25, 0.125}, {0.0625, 0.125, 0.0625}};
 int BOTTOM_SOBEL[3][3] = {{-1, -2, -1}, {0, 0, 0,}, {1, 2, 1}};
 int EMBOSS[3][3] = {{-2, -1, 0}, {-1, 1, 1,}, {0, 1, 2}};
@@ -54,7 +55,8 @@ int main(int argc, char *argv[]) {
 		cout << "Error opening file";
 
 	// Defining the loop for getting input from the file
-	for (int r = 0; r < arraySize; r++) {
+	for (int r = 0; r < arraySize; r++)
+	{	
 		inputfile >> image_matriz[r];
 	}
 
@@ -107,8 +109,11 @@ int main(int argc, char *argv[]) {
   	imagen <<"\n";
 	imagen << "255";
 	imagen << "\n";
+
+	int j;
+	#pragma omp for
 	for (int i = 0; i < width; i++) {
-		for (int j = 0; j < height; j++) {
+		for (j = 0; j < height; j++) {
 			imagen << result_matriz[j + width * i];
 			imagen << " ";
 		}
@@ -119,7 +124,8 @@ int main(int argc, char *argv[]) {
 
 void applyKernel(int image[],int result_image[], int kernel[][3], int size) {
 	int prod;
-
+	
+	#pragma omp parallel for firstprivate(prod)
 	for (int i = 0; i < size * size; i++) {
 		//for (int j = 0; j < 320; j++) {
 		if( (i < size) || (i % size == 0) || ( (i + 1) % size == 0) || (i > size * (size - 1))) {
