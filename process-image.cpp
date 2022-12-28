@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
 void applyKernel(int image[],int result_image[], int kernel[][3], int size) {
 	int prod;
 	
-	#pragma omp parallel for firstprivate(prod)
+	#pragma omp parallel for set_num_thread(55) firstprivate(prod)
 	for (int i = 0; i < size * size; i++) {
 		//for (int j = 0; j < 320; j++) {
 		if( (i < size) || (i % size == 0) || ( (i + 1) % size == 0) || (i > size * (size - 1))) {
