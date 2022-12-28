@@ -23,8 +23,8 @@ We need imagemagick package
     $ sudo yum install ImageMagick
 ### Arch
     $ sudo pacman -S imagemagick
-## Third step
 
+## Third step
 Clone the repository and enter the repository
 
     $ git clone https://github.com/Aleticod/image-kernels-problem
