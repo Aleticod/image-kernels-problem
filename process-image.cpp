@@ -141,8 +141,8 @@ int main(int argc, char *argv[]) {
 void applyKernel(int image[],int result_image[], int kernel[][3], int width, int height, int threads, int factor) {
 	int prod;
 	
-	#pragma omp parallel for set_num_thread(threads) firstprivate(prod)
-	{
+	set_num_thread(threads);
+	#pragma omp parallel for firstprivate(prod)
 		for (int i = 0; i < width * height; i++) {
 			if( (i < width) || (i % width == 0) || ( (i + 1) % width == 0) || (i > width * (height - 1))) {
 				result_image[i] = 0;
@@ -164,5 +164,4 @@ void applyKernel(int image[],int result_image[], int kernel[][3], int width, int
 				result_image[i] = prod;
 			}	
 		}
-	}
 }
