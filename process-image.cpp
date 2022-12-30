@@ -5,7 +5,7 @@
 using namespace std;
 
 // Kernels (1 - 9)
-double BLUR_KERNEL[3][3] = {{0.0625, 0.125, 0.0625}, {0.125, 0.25, 0.125}, {0.0625, 0.125, 0.0625}};
+int BLUR[3][3] = {{625, 1250, 625}, {1250, 2500, 1250}, {625, 1250, 625}};
 int BOTTOM_SOBEL[3][3] = {{-1, -2, -1}, {0, 0, 0,}, {1, 2, 1}};
 int EMBOSS[3][3] = {{-2, -1, 0}, {-1, 1, 1,}, {0, 1, 2}};
 int IDENTITY[3][3] = {{0, 0, 0}, {0, 1, 0,}, {0, 0, 0}};
@@ -16,7 +16,7 @@ int SHARPEN[3][3] = {{0, -1, 0}, {-1, 5, -1,}, {0, -1, 0}};
 int TOP_SOBEL[3][3] = {{1, 2, 1}, {0, 0, 0,}, {-1, -2, -1}};
 
 // Function to apply a kernel to an image
-void applyKernel(int [], int [], int [][3], int, int, int);
+void applyKernel(int [], int [], int [][3], int, int, int, int);
 
 // Main function
 int main(int argc, char *argv[]) {
@@ -78,32 +78,32 @@ int main(int argc, char *argv[]) {
 	// Applying the kernel
 	switch (kernelNumber)
 	{
-	case 1/* constant-expression */:
-		/* code */
+	case 1:
+		applyKernel(imageMatrix, resultMatrix, BLUR, width, height, threadNumber, 10000);
 		break;
 	case 2:
-		applyKernel(imageMatrix, resultMatrix, BOTTOM_SOBEL, width, height, threadNumber);
+		applyKernel(imageMatrix, resultMatrix, BOTTOM_SOBEL, width, height, threadNumber, 1);
 		break;
 	case 3:
-		applyKernel(imageMatrix, resultMatrix, EMBOSS, width, height, threadNumber);
+		applyKernel(imageMatrix, resultMatrix, EMBOSS, width, height, threadNumber, 1);
 		break;
 	case 4:
-		applyKernel(imageMatrix, resultMatrix, IDENTITY, width, height, threadNumber);
+		applyKernel(imageMatrix, resultMatrix, IDENTITY, width, height, threadNumber, 1);
 		break;
 	case 5:
-		applyKernel(imageMatrix, resultMatrix, LEFT_SOBEL, width, height, threadNumber);
+		applyKernel(imageMatrix, resultMatrix, LEFT_SOBEL, width, height, threadNumber, 1);
 		break;
 	case 6:
-			applyKernel(imageMatrix, resultMatrix, OUTLINE, width, height, threadNumber);
+			applyKernel(imageMatrix, resultMatrix, OUTLINE, width, height, threadNumber, 1);
 		break;
 	case 7:
-		applyKernel(imageMatrix, resultMatrix, RIGHT_SOBEL, width, height, threadNumber);
+		applyKernel(imageMatrix, resultMatrix, RIGHT_SOBEL, width, height, threadNumber, 1);
 		break;
 	case 8:
-		applyKernel(imageMatrix, resultMatrix, SHARPEN, width, height, threadNumber);
+		applyKernel(imageMatrix, resultMatrix, SHARPEN, width, height, threadNumber, 1);
 		break;
 	case 9:
-		applyKernel(imageMatrix, resultMatrix, TOP_SOBEL, width, height, threadNumber);
+		applyKernel(imageMatrix, resultMatrix, TOP_SOBEL, width, height, threadNumber, 1);
 		break;
 	default:
 		break;
@@ -128,10 +128,8 @@ int main(int argc, char *argv[]) {
 	imageResultFile << "255";
 	imageResultFile << "\n";
 
-	int j;
-	#pragma omp for
 	for (int i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) {
+		for (int j = 0; j < width; j++) {
 			imageResultFile << resultMatrix[j + width * i];
 			imageResultFile << " ";
 		}
@@ -140,33 +138,31 @@ int main(int argc, char *argv[]) {
 	imageResultFile.close();
 }
 
-void applyKernel(int image[],int result_image[], int kernel[][3], int width, int height, int threads) {
+void applyKernel(int image[],int result_image[], int kernel[][3], int width, int height, int threads, int factor) {
 	int prod;
 	
 	#pragma omp parallel for set_num_thread(threads) firstprivate(prod)
 	{
 		for (int i = 0; i < width * height; i++) {
-		//for (int j = 0; j < 320; j++) {
-		if( (i < width) || (i % width == 0) || ( (i + 1) % width == 0) || (i > width * (height - 1))) {
-			result_image[i] = 0;
-		}
-		else {
-			prod = kernel[0][0] * image[i - width - 1] +
-				kernel[0][1] * image[i - width] +
-				kernel[0][2] * image[i - width + 1] +
-				kernel[1][0] * image[i - 1] +
-				kernel[1][1] * image[i] +
-				kernel[1][2] * image[i + 1] +
-				kernel[2][0] * image[i + width - 1] +
-				kernel[2][1] * image[i + width] +
-				kernel[2][2] * image[i + width + 1];
-			if (prod < 0)
-				prod = 0;
-			if (prod > 255)
-				prod = 255;
-			result_image[i] = prod;
+			if( (i < width) || (i % width == 0) || ( (i + 1) % width == 0) || (i > width * (height - 1))) {
+				result_image[i] = 0;
 			}
-		//}	
+			else {
+				prod = (kernel[0][0] * image[i - width - 1] +
+					kernel[0][1] * image[i - width] +
+					kernel[0][2] * image[i - width + 1] +
+					kernel[1][0] * image[i - 1] +
+					kernel[1][1] * image[i] +
+					kernel[1][2] * image[i + 1] +
+					kernel[2][0] * image[i + width - 1] +
+					kernel[2][1] * image[i + width] +
+					kernel[2][2] * image[i + width + 1]) / factor;
+				if (prod < 0)
+					prod = 0;
+				if (prod > 255)
+					prod = 255;
+				result_image[i] = prod;
+			}	
 		}
 	}
 }
