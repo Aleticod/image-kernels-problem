@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
 void applyKernel(int image[],int result_image[], int kernel[][3], int width, int height, int threads, int factor) {
 	int prod;
 	
-	set_num_thread(threads);
+	omp_set_num_threads(threads);
 	#pragma omp parallel for firstprivate(prod)
 		for (int i = 0; i < width * height; i++) {
 			if( (i < width) || (i % width == 0) || ( (i + 1) % width == 0) || (i > width * (height - 1))) {
