@@ -15,79 +15,93 @@ int RIGHT_SOBEL[3][3] = {{-1, 0, 1}, {-2, 0, 2,}, {-1, 0, 1}};
 int SHARPEN[3][3] = {{0, -1, 0}, {-1, 5, -1,}, {0, -1, 0}};
 int TOP_SOBEL[3][3] = {{1, 2, 1}, {0, 0, 0,}, {-1, -2, -1}};
 
-void applyKernel(int [], int [], int [][3], int);
+// Function to apply a kernel to an image
+void applyKernel(int [], int [], int [][3], int, int);
 
+// Main function
 int main(int argc, char *argv[]) {
+	// Variables
+	string imageName;			// Image name without extension
+	string imageExtention;		// Image extension 
+	int width; 					// Width of the image
+	int height;					// Height of the image
+	int kernelNumber;			// Kernel number to apply
+	int arraySize;				// Size of the image array
+	int *imageMatrix;			// Image array
+	int *resultMatrix;			// Result array
+
 	// Read console arguments
-	string imageName = argv[1];
-	string dataInfo = argv[2];
-	string name;
-	string extention;
-	int height;
-	int width;
-	int kernelNumber;
+	string imageTxt = argv[1];	// File name with the image in txt format
+	string imageData = argv[2];	// File name with the image data
 
 	// Opening the file
-	ifstream datafile(dataInfo);
+	ifstream imageDataFile(imageData);
 
 	// Verify if file is open
-	if(!datafile.is_open())
+	if(!imageDataFile.is_open())
 		cout << "Error opening file";
 
 	// Defining the loop for getting input from the file
-	datafile >> name;
-	datafile >> extention;
-	datafile >> width;
-	height = width;
-	datafile >> kernelNumber;	
+	imageDataFile >> imageName;
+	imageDataFile >> imageExtention;
+	imageDataFile >> width;
+	imageDataFile >> height;
+	imageDataFile >> kernelNumber;	
 
-	int arraySize = width * height;
+	arraySize = width * height;
 
-	// Lectura del archivo lena320.txt
-	int image_matriz[arraySize];
-	int result_matriz[arraySize];
+	// Closing the file
+	imageDataFile.close();
+
+	// Allocating memory for the image array
+	imageMatrix = (int *)malloc(arraySize * sizeof(int));
+	resultMatrix = (int *)malloc(arraySize * sizeof(int));
 	
 	// Opening the file
-	ifstream inputfile(imageName);
+	ifstream imageTxtFile(imageTxt);
 
 	// Verify if file is open
-	if(!inputfile.is_open())
+	if(!imageTxtFile.is_open())
 		cout << "Error opening file";
 
 	// Defining the loop for getting input from the file
 	for (int r = 0; r < arraySize; r++)
 	{	
-		inputfile >> image_matriz[r];
+		imageTxtFile >> imageMatrix[r];
 	}
 
+	// Closing the file
+	imageTxtFile.close();
+
+	// Applying the kernel
 	switch (kernelNumber)
 	{
 	case 1/* constant-expression */:
 		/* code */
 		break;
 	case 2:
-		applyKernel(image_matriz, result_matriz, BOTTOM_SOBEL, width);
+		applyKernel(imageMatrix, resultMatrix, BOTTOM_SOBEL, width, height);
 		break;
 	case 3:
-		applyKernel(image_matriz, result_matriz, EMBOSS, width);
+		applyKernel(imageMatrix, resultMatrix, EMBOSS, width, height);
 		break;
 	case 4:
-		applyKernel(image_matriz, result_matriz, IDENTITY, width);
+		applyKernel(imageMatrix, resultMatrix, IDENTITY, width, height);
 		break;
 	case 5:
-		applyKernel(image_matriz, result_matriz, LEFT_SOBEL, width);
+		applyKernel(imageMatrix, resultMatrix, LEFT_SOBEL, width, height);
 		break;
 	case 6:
-			applyKernel(image_matriz, result_matriz, OUTLINE, width);
+			applyKernel(imageMatrix, resultMatrix, OUTLINE, width, height);
 		break;
 	case 7:
-		applyKernel(image_matriz, result_matriz, RIGHT_SOBEL, width);
+		applyKernel(imageMatrix, resultMatrix, RIGHT_SOBEL, width, height);
 		break;
 	case 8:
-		applyKernel(image_matriz, result_matriz, SHARPEN, width);
+		applyKernel(imageMatrix, resultMatrix, SHARPEN, width, height);
 		break;
 	case 9:
-		applyKernel(image_matriz, result_matriz, TOP_SOBEL, width);
+		applyKernel(imageMatrix, resultMatrix, TOP_SOBEL, width, height);
 		break;
 	default:
 		break;
@@ -95,52 +109,55 @@ int main(int argc, char *argv[]) {
 
 	
 	//int (*)[3] kernel = SHARPEN;
+	
+	// Saving the result
+	string fileDir = "./results/" + imageName + "_result.pgm"; 		// File path with the image in pgm format
+	string fileName = "#" + imageName + "_result.pgm";				// File name with the image in pgm format
+	string fileSize = to_string(width) + " " + to_string(height);	// File size with the image in pgm format
 
-	string fileSize = to_string(width) + " " + to_string(height);
-	string fileDir = "./results/" + name + "_result.pgm";
-	string fileName = "#" + name + "_result.pgm";
-
-	ofstream imagen(fileDir);
-	imagen << "P2";
-	imagen << "\n";
-	imagen << fileName;
-	imagen << "\n";
-	imagen << fileSize;
-  	imagen <<"\n";
-	imagen << "255";
-	imagen << "\n";
+	// Opening the file
+	ofstream imageResultFile(fileDir);
+	imageResultFile << "P2";
+	imageResultFile << "\n";
+	imageResultFile << fileName;
+	imageResultFile << "\n";
+	imageResultFile << fileSize;
+  	imageResultFile <<"\n";
+	imageResultFile << "255";
+	imageResultFile << "\n";
 
 	int j;
 	#pragma omp for
-	for (int i = 0; i < width; i++) {
-		for (j = 0; j < height; j++) {
-			imagen << result_matriz[j + width * i];
-			imagen << " ";
+	for (int i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			imageResultFile << resultMatrix[j + width * i];
+			imageResultFile << " ";
 		}
-		imagen << "\n";
+		imageResultFile << "\n";
 	}
-	imagen.close();
+	imageResultFile.close();
 }
 
-void applyKernel(int image[],int result_image[], int kernel[][3], int size) {
+void applyKernel(int image[],int result_image[], int kernel[][3], int width, int height) {
 	int prod;
 	
-	#pragma omp parallel for set_num_thread(55) firstprivate(prod)
-	for (int i = 0; i < size * size; i++) {
+	#pragma omp parallel for set_num_thread(500) firstprivate(prod)
+	{
+		for (int i = 0; i < width * height; i++) {
 		//for (int j = 0; j < 320; j++) {
-		if( (i < size) || (i % size == 0) || ( (i + 1) % size == 0) || (i > size * (size - 1))) {
+		if( (i < width) || (i % width == 0) || ( (i + 1) % width == 0) || (i > width * (height - 1))) {
 			result_image[i] = 0;
 		}
 		else {
-			prod = kernel[0][0] * image[i - size - 1] +
-				kernel[0][1] * image[i - size] +
-				kernel[0][2] * image[i - size + 1] +
+			prod = kernel[0][0] * image[i - width - 1] +
+				kernel[0][1] * image[i - width] +
+				kernel[0][2] * image[i - width + 1] +
 				kernel[1][0] * image[i - 1] +
 				kernel[1][1] * image[i] +
 				kernel[1][2] * image[i + 1] +
-				kernel[2][0] * image[i + size - 1] +
-				kernel[2][1] * image[i + size] +
-				kernel[2][2] * image[i + size + 1];
+				kernel[2][0] * image[i + width - 1] +
+				kernel[2][1] * image[i + width] +
+				kernel[2][2] * image[i + width + 1];
 			if (prod < 0)
 				prod = 0;
 			if (prod > 255)
@@ -148,5 +165,6 @@ void applyKernel(int image[],int result_image[], int kernel[][3], int size) {
 			result_image[i] = prod;
 			}
 		//}	
+		}
 	}
 }
