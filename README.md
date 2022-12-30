@@ -11,7 +11,7 @@ The work consists of using parallel algorithms designed in OpenMP, CUDA and MPI 
 To do this, you would have to perform a versus of time and speedUp between the
 3 parallelization techniques.
 
-| Kernel name   | Description   |
+| Kernel name   | Number        |
 | :----         |    ---:       |
 | blur          | 1             |
 | bottom sobel  | 2             |
@@ -83,9 +83,11 @@ Example: For image lena.jpg, kernel 3 and 1000 threads
 
 ## **Results**
 The results for this project are inside the ***results*** folder and are the following:
-- Image file in txt format -> *txt_<image-name>.txt* 
-- Image data file in txt format -> *data_<image-name>.txt*
-- Image result executed sequentially in pgm format -> *<image-name>_sec_result.pgm*
-- Image result executed with OpenMP in pgm format -> *<image-name>_omp_result.pgm*
-- Image result executed sequentially in jpg format -> *<image-name>_sec_result.jpg*
-- Image result executed with OpenMP in jpg format -> *<image-name>_omp_result.jpg*
+|Description                    |Result                |
+|:----                          | ----:                 |
+|Image file in txt format       |*txt_<iamge_name>.txt*                  |
+Image data file in txt format   |*data_<iamge_name>.txt*                  |
+Image result executed sequentially in pgm format        |*<iamge_name>_sec_result.pgm*      |
+Image result executed with OpenMP in pgm format        |*<iamge_name>_omp_result.pgm*       |
+Image result executed sequentially in jpg format        |*<iamge_name>_sec_result.jpg*       |
+Image result executed with OpenMP in jpg format        |*<iamge_name>_omp_result.jpg*       |
