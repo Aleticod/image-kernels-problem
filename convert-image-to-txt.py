@@ -27,6 +27,6 @@ with open(data_dir, 'w') as data:
     data.write(file_name[-3:] + " ")    #extension of the image
     data.write(str(width) + " ")        #width of the image
     data.write(str(height) + " ")       #height of the image 
-    data.write(sys.argv[2])             #kernel number
-
+    data.write(sys.argv[2] + " ")       #kernel number
+    data.write(sys.argv[3] + " ")       #thread number
 

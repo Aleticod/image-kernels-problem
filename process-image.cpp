@@ -16,7 +16,7 @@ int SHARPEN[3][3] = {{0, -1, 0}, {-1, 5, -1,}, {0, -1, 0}};
 int TOP_SOBEL[3][3] = {{1, 2, 1}, {0, 0, 0,}, {-1, -2, -1}};
 
 // Function to apply a kernel to an image
-void applyKernel(int [], int [], int [][3], int, int);
+void applyKernel(int [], int [], int [][3], int, int, int);
 
 // Main function
 int main(int argc, char *argv[]) {
@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
 	int width; 					// Width of the image
 	int height;					// Height of the image
 	int kernelNumber;			// Kernel number to apply
+	int threadNumber;			// Number of threads
 	int arraySize;				// Size of the image array
 	int *imageMatrix;			// Image array
 	int *resultMatrix;			// Result array
@@ -46,7 +47,8 @@ int main(int argc, char *argv[]) {
 	imageDataFile >> imageExtention;
 	imageDataFile >> width;
 	imageDataFile >> height;
-	imageDataFile >> kernelNumber;	
+	imageDataFile >> kernelNumber;
+	imageDataFile >> threadNumber;
 
 	arraySize = width * height;
 
@@ -80,28 +82,28 @@ int main(int argc, char *argv[]) {
 		/* code */
 		break;
 	case 2:
-		applyKernel(imageMatrix, resultMatrix, BOTTOM_SOBEL, width, height);
+		applyKernel(imageMatrix, resultMatrix, BOTTOM_SOBEL, width, height, threadNumber);
 		break;
 	case 3:
-		applyKernel(imageMatrix, resultMatrix, EMBOSS, width, height);
+		applyKernel(imageMatrix, resultMatrix, EMBOSS, width, height, threadNumber);
 		break;
 	case 4:
-		applyKernel(imageMatrix, resultMatrix, IDENTITY, width, height);
+		applyKernel(imageMatrix, resultMatrix, IDENTITY, width, height, threadNumber);
 		break;
 	case 5:
-		applyKernel(imageMatrix, resultMatrix, LEFT_SOBEL, width, height);
+		applyKernel(imageMatrix, resultMatrix, LEFT_SOBEL, width, height, threadNumber);
 		break;
 	case 6:
-			applyKernel(imageMatrix, resultMatrix, OUTLINE, width, height);
+			applyKernel(imageMatrix, resultMatrix, OUTLINE, width, height, threadNumber);
 		break;
 	case 7:
-		applyKernel(imageMatrix, resultMatrix, RIGHT_SOBEL, width, height);
+		applyKernel(imageMatrix, resultMatrix, RIGHT_SOBEL, width, height, threadNumber);
 		break;
 	case 8:
-		applyKernel(imageMatrix, resultMatrix, SHARPEN, width, height);
+		applyKernel(imageMatrix, resultMatrix, SHARPEN, width, height, threadNumber);
 		break;
 	case 9:
-		applyKernel(imageMatrix, resultMatrix, TOP_SOBEL, width, height);
+		applyKernel(imageMatrix, resultMatrix, TOP_SOBEL, width, height, threadNumber);
 		break;
 	default:
 		break;
@@ -138,10 +140,10 @@ int main(int argc, char *argv[]) {
 	imageResultFile.close();
 }
 
-void applyKernel(int image[],int result_image[], int kernel[][3], int width, int height) {
+void applyKernel(int image[],int result_image[], int kernel[][3], int width, int height, int threads) {
 	int prod;
 	
-	#pragma omp parallel for set_num_thread(500) firstprivate(prod)
+	#pragma omp parallel for set_num_thread(threads) firstprivate(prod)
 	{
 		for (int i = 0; i < width * height; i++) {
 		//for (int j = 0; j < 320; j++) {
