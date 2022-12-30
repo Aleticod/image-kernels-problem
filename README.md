@@ -5,24 +5,24 @@ This project is a solution for the image-kernels-problem
 ## First step
 We need python3 and matplotlib package for install matplotlib package run the next command for your distribution
 
-### Ubuntu / Debina
+#### *Ubuntu / Debina*
     sudo apt install python3-matplotlib
-### Fedora
+#### *Fedora*
     sudo dnf install python3-matplotlib
-### Red Hat
+#### *Red Hat*
     sudo yum install python3-matplotlib
-### Arch
+#### *Arch*
     sudo pacman -S python-matplotlib
 
 ## Second step
 We need ImageMagick, for install ImageMagick run the next command for your distribution
-### Ubuntu / Debina
+#### *Ubuntu / Debina*
     sudo apt imagemagick
-### Fedora
+#### *Fedora*
     sudo dnf install ImageMagick
-### Red Hat
+#### *Red Hat*
     sudo yum install ImageMagick
-### Arch
+#### *Arch*
     sudo pacman -S imagemagick
 
 ## Third step
