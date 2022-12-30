@@ -17,7 +17,7 @@ We need python3 and matplotlib package for install matplotlib package run the ne
 ## Second step
 We need ImageMagick, for install ImageMagick run the next command for your distribution
 #### *Ubuntu / Debina*
-    sudo apt imagemagick
+    sudo apt install imagemagick
 #### *Fedora*
     sudo dnf install ImageMagick
 #### *Red Hat*
