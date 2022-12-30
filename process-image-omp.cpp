@@ -113,8 +113,8 @@ int main(int argc, char *argv[]) {
 	//int (*)[3] kernel = SHARPEN;
 	
 	// Saving the result
-	string fileDir = "./results/" + imageName + "_result.pgm"; 		// File path with the image in pgm format
-	string fileName = "#" + imageName + "_result.pgm";				// File name with the image in pgm format
+	string fileDir = "./results/" + imageName + "_omp_result.pgm"; 		// File path with the image in pgm format
+	string fileName = "#" + imageName + "_omp_result.pgm";				// File name with the image in pgm format
 	string fileSize = to_string(width) + " " + to_string(height);	// File size with the image in pgm format
 
 	// Opening the file
