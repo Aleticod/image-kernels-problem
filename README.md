@@ -49,7 +49,7 @@ We need ImageMagick, for install ImageMagick run the next command for your distr
 #### *Arch*
     sudo pacman -S imagemagick
 
-## **Clon the repository**
+## **Clone the repository**
 Clone the repository and enter inside folder image-kernels-problem and create two empty folders ***images*** and ***results*** for download images and save results images respectively and run the next command
 
     git clone https://github.com/Aleticod/image-kernels-problem
