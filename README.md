@@ -29,7 +29,7 @@ The programming languages used in the project will be C++, python and bash.
 ## **Install necessary packages**
 We need python3 and matplotlib package for install matplotlib package run the next command for your distribution
 
-#### *Ubuntu / Debina*
+#### *Ubuntu / Debian*
     sudo apt install python3-matplotlib
 #### *Fedora*
     sudo dnf install python3-matplotlib
