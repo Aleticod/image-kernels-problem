@@ -1,4 +1,3 @@
-%%writefile process-image-cuda.cu
 #include <iostream>
 #include <fstream>
 #include <cstring>
@@ -6,7 +5,6 @@
 using namespace std;
 
 // Kernels (1 - 9)
-//int BLUR[3][3] = {{625, 1250, 625}, {1250, 2500, 1250}, {625, 1250, 625}};
 int kernelSize = 9;
 int BLUR[9] = {625, 1250, 625, 1250, 2500, 1250, 625, 1250, 625};
 int BOTTOM_SOBEL[9] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
@@ -24,8 +22,8 @@ __global__ void applyKernel(int *image,int *result_image, int *kernel, int width
 	int prod;
 	// ID calculation
 	int idBlock = blockIdx.z * gridDim.x * gridDim.y + blockIdx.y * gridDim.x + blockIdx.x;
-  int idThread = threadIdx.z * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
-  int id = blockDim.x * blockDim.y * blockDim.z * idBlock + idThread;
+  	int idThread = threadIdx.z * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
+  	int id = blockDim.x * blockDim.y * blockDim.z * idBlock + idThread;
 
 	// Calculating the image size
 	int imageSize = width * height;
@@ -68,7 +66,7 @@ int main(int argc, char *argv[]) {
 	int *resultMatrix;			// Result array
 	int *dev_imageMatrix;		// Device image array
 	int *dev_resultMatrix;		// Device result array
-  int *dev_kernel;					// Device kernel
+  	int *dev_kernel;			// Device kernel
 
 	// Read console arguments
 	string imageTxt = argv[1];	// File name with the image in txt format
@@ -101,7 +99,7 @@ int main(int argc, char *argv[]) {
 	// Allocating memory for the device image array
 	cudaMalloc((void **)&dev_imageMatrix, arraySize * sizeof(int));
 	cudaMalloc((void **)&dev_resultMatrix, arraySize * sizeof(int));
-  cudaMalloc((void **)&dev_kernel, kernelSize * sizeof(int));
+  	cudaMalloc((void **)&dev_kernel, kernelSize * sizeof(int));
 
 	// Opening the file
 	ifstream imageTxtFile(imageTxt);
@@ -197,7 +195,7 @@ int main(int argc, char *argv[]) {
 	}
 	imageResultFile.close();
 
-  cudaFree( dev_imageMatrix);
-  cudaFree( dev_kernel);
-  cudaFree( dev_resultMatrix);
+  	cudaFree( dev_imageMatrix);
+  	cudaFree( dev_kernel);
+  	cudaFree( dev_resultMatrix);
 }
