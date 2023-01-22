@@ -1,3 +1,4 @@
+%%writefile process-image-cuda.cu
 #include <iostream>
 #include <fstream>
 #include <cstring>
@@ -5,43 +6,45 @@
 using namespace std;
 
 // Kernels (1 - 9)
-int BLUR[3][3] = {{625, 1250, 625}, {1250, 2500, 1250}, {625, 1250, 625}};
-int BOTTOM_SOBEL[3][3] = {{-1, -2, -1}, {0, 0, 0,}, {1, 2, 1}};
-int EMBOSS[3][3] = {{-2, -1, 0}, {-1, 1, 1,}, {0, 1, 2}};
-int IDENTITY[3][3] = {{0, 0, 0}, {0, 1, 0,}, {0, 0, 0}};
-int LEFT_SOBEL[3][3] = {{1, 0, -1}, {2, 0, -2,}, {1, 0, -1}};
-int OUTLINE[3][3] = {{-1, -1, -1}, {-1, 8, -1,}, {-1, -1, -1}};
-int RIGHT_SOBEL[3][3] = {{-1, 0, 1}, {-2, 0, 2,}, {-1, 0, 1}};
-int SHARPEN[3][3] = {{0, -1, 0}, {-1, 5, -1,}, {0, -1, 0}};
-int TOP_SOBEL[3][3] = {{1, 2, 1}, {0, 0, 0,}, {-1, -2, -1}};
+//int BLUR[3][3] = {{625, 1250, 625}, {1250, 2500, 1250}, {625, 1250, 625}};
+int kernelSize = 9;
+int BLUR[9] = {625, 1250, 625, 1250, 2500, 1250, 625, 1250, 625};
+int BOTTOM_SOBEL[9] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
+int EMBOSS[9] = {-2, -1, 0, -1, 1, 1, 0, 1, 2};
+int IDENTITY[9] = {0, 0, 0, 0, 1, 0, 0, 0, 0};
+int LEFT_SOBEL[9] = {1, 0, -1, 2, 0, -2, 1, 0, -1};
+int OUTLINE[9] = {-1, -1, -1, -1, 8, -1, -1, -1, -1};
+int RIGHT_SOBEL[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+int SHARPEN[9] = {0, -1, 0, -1, 5, -1, 0, -1, 0};
+int TOP_SOBEL[9] = {1, 2, 1, 0, 0, 0, -1, -2, -1};
 
 // Function to apply a kernel to an image
-__global__ void applyKernel(int *image,int *result_image, int kernel[][3], int *width, int *height, int *factor) {
+__global__ void applyKernel(int *image,int *result_image, int *kernel, int width, int height, int factor) {
 	
 	int prod;
 	// ID calculation
 	int idBlock = blockIdx.z * gridDim.x * gridDim.y + blockIdx.y * gridDim.x + blockIdx.x;
-	int idThread = threadIdx.z * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
-	int id = idBlock * blockDim.x * blockDim.y * blockDim.z + idThread;
+  int idThread = threadIdx.z * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
+  int id = blockDim.x * blockDim.y * blockDim.z * idBlock + idThread;
 
 	// Calculating the image size
-	int imageSize = *width * *height;
+	int imageSize = width * height;
 
 	// Applying the kernel
 	if(id < imageSize) {
-		if( (id < *width) || (id % *width == 0) || ( (id + 1) % *width == 0) || (id > *width * (*height - 1))) {
+		if( (id < width) || (id % width == 0) || ( (id + 1) % width == 0) || (id > width * (height - 1))) {
 			result_image[id] = 0;
 		}
 		else {
-			prod = (kernel[0][0] * image[id - *width - 1] +
-				kernel[0][1] * image[id - *width] +
-				kernel[0][2] * image[id - *width + 1] +
-				kernel[1][0] * image[id - 1] +
-				kernel[1][1] * image[id] +
-				kernel[1][2] * image[id + 1] +
-				kernel[2][0] * image[id + *width - 1] +
-				kernel[2][1] * image[id + *width] +
-				kernel[2][2] * image[id + *width + 1]) / *factor;
+			prod = (kernel[0] * image[id - width - 1] +
+				kernel[1] * image[id - width] +
+				kernel[2] * image[id - width + 1] +
+				kernel[3] * image[id - 1] +
+				kernel[4] * image[id] +
+				kernel[5] * image[id + 1] +
+				kernel[6] * image[id + width - 1] +
+				kernel[7] * image[id + width] +
+				kernel[8] * image[id + width + 1]) / factor;
 			if (prod < 0)
 				prod = 0;
 			if (prod > 255)
@@ -65,6 +68,7 @@ int main(int argc, char *argv[]) {
 	int *resultMatrix;			// Result array
 	int *dev_imageMatrix;		// Device image array
 	int *dev_resultMatrix;		// Device result array
+  int *dev_kernel;					// Device kernel
 
 	// Read console arguments
 	string imageTxt = argv[1];	// File name with the image in txt format
@@ -97,6 +101,7 @@ int main(int argc, char *argv[]) {
 	// Allocating memory for the device image array
 	cudaMalloc((void **)&dev_imageMatrix, arraySize * sizeof(int));
 	cudaMalloc((void **)&dev_resultMatrix, arraySize * sizeof(int));
+  cudaMalloc((void **)&dev_kernel, kernelSize * sizeof(int));
 
 	// Opening the file
 	ifstream imageTxtFile(imageTxt);
@@ -119,37 +124,46 @@ int main(int argc, char *argv[]) {
 
 
 	// Applying the kernel
-	dim3 block(50, 50, 1);
-	dim3 thread(50, 50, 1);
+	dim3 block(20, 20, 20);
+	dim3 thread(10, 10, 5);
 
 	switch (kernelNumber)
 	{
 	case 1:
-		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, BLUR, &width, &height, 10000);
+    cudaMemcpy(dev_kernel, BLUR, kernelSize * sizeof(int), cudaMemcpyHostToDevice);
+		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, dev_kernel, width, height, 10000);
 		break;
 	case 2:
-		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, BOTTOM_SOBEL, &width, &height, 1);
+    cudaMemcpy(dev_kernel, BOTTOM_SOBEL, kernelSize * sizeof(int), cudaMemcpyHostToDevice);
+		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, dev_kernel, width, height, 1);
 		break;
 	case 3:
-		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, EDGE_DETECT, &width, &height, 1);
+    cudaMemcpy(dev_kernel, EMBOSS, kernelSize * sizeof(int), cudaMemcpyHostToDevice);
+		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, dev_kernel, width, height, 1);
 		break;
 	case 4:
-		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, EMBOSS, &width, &height, 1);
+    cudaMemcpy(dev_kernel, IDENTITY, kernelSize * sizeof(int), cudaMemcpyHostToDevice);
+		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, dev_kernel, width, height, 1);
 		break;
 	case 5:
-		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, LEFT_SOBEL, &width, &height, 1);
+    cudaMemcpy(dev_kernel, LEFT_SOBEL, kernelSize * sizeof(int), cudaMemcpyHostToDevice);
+		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, dev_kernel, width, height, 1);
 		break;
 	case 6:
-		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, MEAN_REMOVAL, &width, &height, 1);
+    cudaMemcpy(dev_kernel, OUTLINE, kernelSize * sizeof(int), cudaMemcpyHostToDevice);
+		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, dev_kernel, width, height, 1);
 		break;
 	case 7:
-		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, RIGHT_SOBEL, &width, &height, 1);t
+    cudaMemcpy(dev_kernel, RIGHT_SOBEL, kernelSize * sizeof(int), cudaMemcpyHostToDevice);
+		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, dev_kernel, width, height, 1);
 		break;
 	case 8:
-		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, SHARPEN, &width, &height, 1);
+    cudaMemcpy(dev_kernel, SHARPEN, kernelSize * sizeof(int), cudaMemcpyHostToDevice);
+		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, dev_kernel, width, height, 1);
 		break;
 	case 9:
-		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, TOP_SOBEL, &width, &height, 1);
+    cudaMemcpy(dev_kernel, TOP_SOBEL, kernelSize * sizeof(int), cudaMemcpyHostToDevice);
+		applyKernel<<<block, thread>>>(dev_imageMatrix, dev_resultMatrix, dev_kernel, width, height, 1);
 		break;
 	default:
 		break;
@@ -159,8 +173,8 @@ int main(int argc, char *argv[]) {
 	cudaMemcpy(resultMatrix, dev_resultMatrix, arraySize * sizeof(int), cudaMemcpyDeviceToHost);
 
 	// Saving the result
-	string fileDir = "./results/" + imageName + "_omp_result.pgm"; 		// File path with the image in pgm format
-	string fileName = "#" + imageName + "_omp_result.pgm";				// File name with the image in pgm format
+	string fileDir = "./results/" + imageName + "_cuda_result.pgm"; 		// File path with the image in pgm format
+	string fileName = "#" + imageName + "_cuda_result.pgm";				// File name with the image in pgm format
 	string fileSize = to_string(width) + " " + to_string(height);	// File size with the image in pgm format
 
 	// Opening the file
@@ -182,4 +196,8 @@ int main(int argc, char *argv[]) {
 		imageResultFile << "\n";
 	}
 	imageResultFile.close();
+
+  cudaFree( dev_imageMatrix);
+  cudaFree( dev_kernel);
+  cudaFree( dev_resultMatrix);
 }
