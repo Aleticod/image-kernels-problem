@@ -67,6 +67,8 @@ int main(int argc, char *argv[]) {
 	int *dev_imageMatrix;		// Device image array
 	int *dev_resultMatrix;		// Device result array
   	int *dev_kernel;			// Device kernel
+	cudaEvent_t start;			// Time start
+	cudaEvent_t end;			// Time end
 
 	// Read console arguments
 	string imageTxt = argv[1];	// File name with the image in txt format
@@ -122,8 +124,16 @@ int main(int argc, char *argv[]) {
 
 
 	// Applying the kernel
-	dim3 block(20, 20, 20);
+	dim3 block(25, 25, 5);
 	dim3 thread(10, 10, 5);
+
+	// Event creation
+	cudaEventCreate(&start);
+	cudaEventCreate(&end);
+
+	// Time start
+	cudaEventRecord(start, 0);
+
 
 	switch (kernelNumber)
 	{
@@ -166,6 +176,25 @@ int main(int argc, char *argv[]) {
 	default:
 		break;
 	}
+
+	cudaDeviceSynchronize();
+
+	// Time stop
+	cudaEventRecord(end, 0);
+
+	// Synchronization GPU - CPU
+	cudaEventSynchronize(end);
+
+	// Time calculation in milliseconds
+	float time;
+	cudaEventElapsedTime(&time, start, end);
+
+	// Showing runtime results in seconds
+	printf("> Runtime in CUDA: \t\t%f sec. time.\n", time / 1000);
+
+	// Releasing resources
+	cudaEventDestroy(start);
+	cudaEventDestroy(end);
 
 	// Copying the result array to the host
 	cudaMemcpy(resultMatrix, dev_resultMatrix, arraySize * sizeof(int), cudaMemcpyDeviceToHost);

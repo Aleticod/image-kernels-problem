@@ -28,6 +28,8 @@ int main(int argc, char *argv[]) {
 	int arraySize;				// Size of the image array
 	int *imageMatrix;			// Image array
 	int *resultMatrix;			// Result array
+	clock_t start;				// Time start
+	clock_t end;				// Time end
 
 	// Read console arguments
 	string imageTxt = argv[1];	// File name with the image in txt format
@@ -73,6 +75,9 @@ int main(int argc, char *argv[]) {
 	// Closing the file
 	imageTxtFile.close();
 
+	// Time start
+	start = clock();
+
 	// Applying the kernel
 	switch (kernelNumber)
 	{
@@ -107,9 +112,11 @@ int main(int argc, char *argv[]) {
 		break;
 	}
 
-	
-	//int (*)[3] kernel = SHARPEN;
-	
+	// Time end
+	end = clock();
+	// Showing runtime results 
+	printf("> Runtime in Secuential: \t%f sec. time.\n", (double)(end - start) / CLOCKS_PER_SEC);
+
 	// Saving the result
 	string fileDir = "./results/" + imageName + "_sec_result.pgm"; 		// File path with the image in pgm format
 	string fileName = "#" + imageName + "_sec_result.pgm";				// File name with the image in pgm format

@@ -30,6 +30,8 @@ int main(int argc, char *argv[]) {
 	int arraySize;				// Size of the image array
 	int *imageMatrix;			// Image array
 	int *resultMatrix;			// Result array
+	double start;				// Time start
+	double end;					// Time end
 
 	// Read console arguments
 	string imageTxt = argv[1];	// File name with the image in txt format
@@ -75,6 +77,9 @@ int main(int argc, char *argv[]) {
 	// Closing the file
 	imageTxtFile.close();
 
+	// Time start
+	start = omp_get_wtime();
+
 	// Applying the kernel
 	switch (kernelNumber)
 	{
@@ -109,8 +114,11 @@ int main(int argc, char *argv[]) {
 		break;
 	}
 
-	
-	//int (*)[3] kernel = SHARPEN;
+	// Time end
+	end = omp_get_wtime();
+
+	// Showing runtime results
+	printf("> Runtime in OpenOMP: \t\t%f sec. time.\n", end - start);
 	
 	// Saving the result
 	string fileDir = "./results/" + imageName + "_omp_result.pgm"; 		// File path with the image in pgm format

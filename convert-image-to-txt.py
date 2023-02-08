@@ -8,7 +8,12 @@ file_dir = './images/' + file_name
 # Read the image
 img = image.imread(file_dir)
 height, width = img.shape
-print("Image shape width x height: ", width, height)
+
+
+print(f"The image to process is: {file_name}")
+print(f"The image shape width x height is : {width} x {height}")
+print("=================================================")
+print("***** Process times for different methods is *****")
 
 # Direction to save the result
 result_dir = './results/txt_' + file_name[:-3] + "txt" 
