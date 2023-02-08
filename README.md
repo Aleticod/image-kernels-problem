@@ -49,6 +49,17 @@ We need ImageMagick, for install ImageMagick run the next command for your distr
 #### *Arch*
     sudo pacman -S imagemagick
 
+## Third step
+Verify if your PC has a NVIDIA GPU device, this is required to use the last version of CUDA. Verify with the next commands.
+
+
+    lspci | grep -i nvidia
+    nvidia-smi
+    nvcc --version
+
+To download and install CUDA visit the oficial page NVIDIA
+https://developer.nvidia.com/cuda-downloads
+
 ## **Clone the repository**
 Clone the repository and enter inside folder image-kernels-problem and create two empty folders ***images*** and ***results*** for download images and save results images respectively and run the next command
 
@@ -60,26 +71,30 @@ Create two empty folders
 ## **Download images**
 Download images from the next links and save in images folder, for this run the next commands
 
-***Download lena.jpg image with size 256x256***
+***Download 1-lena.jpg image with size 256x256***
 
-    wget -P images https://i.postimg.cc/Y2znHqbR/lena.jpg
+    wget -P images https://i.postimg.cc/Y2znHqbR/1-lena.jpg
 
-***Download cameraman.jpg image with size 512x512***
+***Download 2-cameraman.jpg image with size 320x320***
 
-    wget -P images https://i.postimg.cc/sfcNVV3V/cameraman.jpg
+    wget -P images https://i.postimg.cc/k4mZMdwn/2-cameraman.jpg
 
-***Download cat.jpg image with size 914x610***
+***Download 3-couple.jpg image with size 512x512***
 
-    wget -P images https://i.postimg.cc/sXVj0gT8/cat.jpg
+    wget -P images https://i.postimg.cc/nL3y2LJC/3-couple.jpg
+
+***Download 4-male.jpg image with size 1024x1024***
+
+    wget -P images https://i.postimg.cc/yxZ27XSZ/4-male.jpg
 
 ## **Run the project**
-To execute the project we must execute the following command, with the name of the image without extension, kernel number and number of threads as follows
+To execute the project we must execute the following command, this program will be execute with all images, especify kernel number, number of threads and number of process as follows
 
-    bash run-project.sh <image-name> <kernel-number> <thread-numbers>
+    bash run-project.sh <kernel-number> <thread-numbers> <process-numbers>
 
-Example: For image lena.jpg, kernel 3 and 1000 threads
+Example: For image lena.jpg, kernel 3 and 128 threads
 
-    bash run-project.sh lena 3 1000
+    bash run-project.sh 3 128 4
 
 ## **Results**
 The results for this project are inside the ***results*** folder and are the following:
@@ -87,7 +102,7 @@ The results for this project are inside the ***results*** folder and are the fol
 |:----                          | ----:                 |
 |Image file in txt format       |*txt_<image_name>.txt*                  |
 Image data file in txt format   |*data_<image_name>.txt*                  |
-Image result executed sequentially in pgm format        |*<image_name>_sec_result.pgm*      |
-Image result executed with OpenMP in pgm format        |*<image_name>_omp_result.pgm*       |
 Image result executed sequentially in jpg format        |*<image_name>_sec_result.jpg*       |
 Image result executed with OpenMP in jpg format        |*<image_name>_omp_result.jpg*       |
+Image result executed with CUDA in jpg format        |*<image_name>_cuda_result.jpg*       |
+Image result executed with OpenMPI in jpg format        |*<image_name>_mpi_result.jpg*       |
